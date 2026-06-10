@@ -1,0 +1,29 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# 模型、权重、结果文件（超大文件）
+*.pt
+*.pth
+*.pkl
+results/
+output/
+checkpoints/
+
+# 图片
+*.png
+*.jpg
+*.jpeg
+
+# 日志
+*.log
+*.json
+
+# VSCode
+.vscode/

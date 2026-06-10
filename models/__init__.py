@@ -1,0 +1,13 @@
+"""
+Synchronization Transformer Models
+基于论文 "Synchronization Transformer: Dynamical Temporal Attention Matters"
+"""
+
+from .sync_transformer import SynchronizationTransformer
+from .controller import SyncController, DesyncController
+
+__all__ = [
+    'SynchronizationTransformer',
+    'SyncController',
+    'DesyncController',
+]
