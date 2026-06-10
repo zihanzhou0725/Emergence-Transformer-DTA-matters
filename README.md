@@ -1,8 +1,8 @@
-# DTA Platform V1
+# DTA Platform
 
-A PyTorch implementation of the V1 **Synchronization Transformer** for numerical experiments on coupled oscillator synchronization and desynchronization.
+A PyTorch implementation of the **Synchronization Transformer** for numerical experiments on coupled oscillator synchronization and desynchronization.
 
-This repository focuses on the V1 model only: a single-layer Dynamical Temporal Attention (DTA) mechanism that augments traditional network coupling with an attention-based temporal memory term.
+This repository focuses on the model only: a single-layer Dynamical Temporal Attention (DTA) mechanism that augments traditional network coupling with an attention-based temporal memory term.
 
 ## Features
 
@@ -17,7 +17,7 @@ This repository focuses on the V1 model only: a single-layer Dynamical Temporal 
 
 ## Model Summary
 
-The V1 model simulates a network of `N` phase oscillators. Each oscillator has phase `theta_i`, natural frequency `omega_i`, and is coupled through a spatial network `A`.
+The model simulates a network of `N` phase oscillators. Each oscillator has phase `theta_i`, natural frequency `omega_i`, and is coupled through a spatial network `A`.
 
 The phase update is:
 
@@ -261,7 +261,7 @@ Inspect learned `W_Q` and `W_K` matrices from a checkpoint:
 python visualize_attention_weights.py --checkpoint results/sync_neighbor_ws/final_model.pt
 ```
 
-This is useful for understanding how the V1 DTA model encodes temporal attention.
+This is useful for understanding how the DTA model encodes temporal attention.
 
 ## Reproducibility
 
