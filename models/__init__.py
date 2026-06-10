@@ -1,6 +1,6 @@
 """
 Synchronization Transformer Models
-基于论文 "Synchronization Transformer: Dynamical Temporal Attention Matters"
+Based on paper "Synchronization Transformer: Dynamical Temporal Attention Matters"
 """
 
 from .sync_transformer import SynchronizationTransformer

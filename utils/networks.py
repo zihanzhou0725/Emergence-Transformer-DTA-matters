@@ -1,6 +1,6 @@
 """
-网络拓扑生成工具
-包括 Watts-Strogatz 小世界网络等
+Network topology generation utilities
+Includes Watts-Strogatz small-world networks and related graphs
 """
 
 import torch
@@ -10,24 +10,24 @@ import networkx as nx
 
 def generate_watts_strogatz(n_nodes, k_neighbors, rewiring_prob, seed=None):
     """
-    生成 Watts-Strogatz 小世界网络
+    Generate a Watts-Strogatz small-world network
     
     Args:
-        n_nodes: 节点数量 N
-        k_neighbors: 每个节点连接的最近邻节点数 (必须为偶数)
-        rewiring_prob: 重连概率 p
-        seed: 随机种子
+        n_nodes: number of nodes N
+        k_neighbors: number of nearest neighbors per node (must be even)
+        rewiring_prob: rewiring probability p
+        seed: random seed
     
     Returns:
-        adjacency: (N, N) 邻接矩阵 (PyTorch tensor)
+        adjacency: (N, N) adjacency matrix (PyTorch tensor)
     """
     if seed is not None:
         np.random.seed(seed)
     
-    # 使用 NetworkX 生成 WS 网络
+    # Use NetworkX to generate the WS network
     G = nx.watts_strogatz_graph(n_nodes, k_neighbors, rewiring_prob, seed=seed)
     
-    # 转换为邻接矩阵
+    # Convert to adjacency matrix
     adjacency = nx.to_numpy_array(G)
     
     return torch.from_numpy(adjacency).float()
@@ -35,13 +35,13 @@ def generate_watts_strogatz(n_nodes, k_neighbors, rewiring_prob, seed=None):
 
 def generate_fully_connected(n_nodes):
     """
-    生成全连接网络
+    Generate a fully connected network
     
     Args:
-        n_nodes: 节点数量 N
+        n_nodes: number of nodes N
     
     Returns:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     """
     adjacency = torch.ones(n_nodes, n_nodes) - torch.eye(n_nodes)
     return adjacency
@@ -49,14 +49,14 @@ def generate_fully_connected(n_nodes):
 
 def generate_ring_network(n_nodes, k_neighbors=2):
     """
-    生成环形网络 (WS 网络在 p=0 时的特例)
+    Generate a ring network (special case of a WS network when p=0)
     
     Args:
-        n_nodes: 节点数量 N
-        k_neighbors: 每个节点连接的最近邻节点数
+        n_nodes: number of nodes N
+        k_neighbors: number of nearest neighbors per node
     
     Returns:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     """
     adjacency = torch.zeros(n_nodes, n_nodes)
     half_k = k_neighbors // 2
@@ -73,15 +73,15 @@ def generate_ring_network(n_nodes, k_neighbors=2):
 
 def generate_erdos_renyi(n_nodes, connection_prob, seed=None):
     """
-    生成 Erdős-Rényi 随机网络
+    Generate an Erdos-Renyi random network
     
     Args:
-        n_nodes: 节点数量 N
-        connection_prob: 连接概率 p
-        seed: 随机种子
+        n_nodes: number of nodes N
+        connection_prob: connection probability p
+        seed: random seed
     
     Returns:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     """
     if seed is not None:
         np.random.seed(seed)
@@ -94,15 +94,15 @@ def generate_erdos_renyi(n_nodes, connection_prob, seed=None):
 
 def generate_barabasi_albert(n_nodes, m_edges, seed=None):
     """
-    生成 Barabási-Albert 无标度网络
+    Generate a Barabasi-Albert scale-free network
     
     Args:
-        n_nodes: 节点数量 N
-        m_edges: 每个新节点连接的边数
-        seed: 随机种子
+        n_nodes: number of nodes N
+        m_edges: number of edges for each new node
+        seed: random seed
     
     Returns:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     """
     if seed is not None:
         np.random.seed(seed)
@@ -115,13 +115,13 @@ def generate_barabasi_albert(n_nodes, m_edges, seed=None):
 
 def compute_average_shortest_path_length(adjacency):
     """
-    计算网络的平均最短路径长度 (ASPL)
+    Compute average shortest path length (ASPL)
     
     Args:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     
     Returns:
-        aspl: 平均最短路径长度
+        aspl: Average shortest path length
     """
     if isinstance(adjacency, torch.Tensor):
         adjacency = adjacency.numpy()
@@ -129,7 +129,7 @@ def compute_average_shortest_path_length(adjacency):
     G = nx.from_numpy_array(adjacency)
     
     if not nx.is_connected(G):
-        # 如果不连通，返回最大连通分量的ASPL
+        # If disconnected，return ASPL for the largest connected component
         largest_cc = max(nx.connected_components(G), key=len)
         G = G.subgraph(largest_cc).copy()
     
@@ -138,13 +138,13 @@ def compute_average_shortest_path_length(adjacency):
 
 def compute_clustering_coefficient(adjacency):
     """
-    计算网络的平均聚类系数
+    Compute average clustering coefficient
     
     Args:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     
     Returns:
-        cc: 平均聚类系数
+        cc: Average clustering coefficient
     """
     if isinstance(adjacency, torch.Tensor):
         adjacency = adjacency.numpy()
@@ -155,13 +155,13 @@ def compute_clustering_coefficient(adjacency):
 
 def compute_degree_distribution(adjacency):
     """
-    计算网络的度分布
+    Compute degree distribution
     
     Args:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     
     Returns:
-        degrees: (N,) 各节点的度
+        degrees: (N,) node degrees
     """
     if isinstance(adjacency, torch.Tensor):
         adjacency = adjacency.numpy()
@@ -171,10 +171,10 @@ def compute_degree_distribution(adjacency):
 
 def network_summary(adjacency):
     """
-    打印网络统计信息
+    Print network summary
     
     Args:
-        adjacency: (N, N) 邻接矩阵
+        adjacency: (N, N) adjacency matrix
     """
     if isinstance(adjacency, torch.Tensor):
         adjacency_np = adjacency.numpy()
@@ -182,25 +182,25 @@ def network_summary(adjacency):
         adjacency_np = adjacency
     
     n_nodes = adjacency_np.shape[0]
-    n_edges = adjacency_np.sum() / 2  # 无向图
+    n_edges = adjacency_np.sum() / 2  # undirected graph
     
     G = nx.from_numpy_array(adjacency_np)
     is_connected = nx.is_connected(G)
     
     print("=" * 50)
-    print("网络统计信息")
+    print("Network summary")
     print("=" * 50)
-    print(f"节点数量: {n_nodes}")
-    print(f"边数量: {int(n_edges)}")
-    print(f"是否连通: {is_connected}")
+    print(f"number of nodes: {n_nodes}")
+    print(f"Number of edges: {int(n_edges)}")
+    print(f"Connected: {is_connected}")
     
     if is_connected:
         aspl = nx.average_shortest_path_length(G)
-        print(f"平均最短路径长度 (ASPL): {aspl:.4f}")
+        print(f"Average shortest path length (ASPL): {aspl:.4f}")
     
     avg_degree = adjacency_np.sum(axis=1).mean()
-    print(f"平均度: {avg_degree:.4f}")
+    print(f"Average degree: {avg_degree:.4f}")
     
     cc = nx.average_clustering(G)
-    print(f"平均聚类系数: {cc:.4f}")
+    print(f"Average clustering coefficient: {cc:.4f}")
     print("=" * 50)

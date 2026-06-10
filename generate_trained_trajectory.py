@@ -1,9 +1,9 @@
 """
-加载训练好的模型，生成 R-timestep 演化图
+Load a trained model and generate R-vs-timestep plots
 """
 
 import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'  # 解决OpenMP警告
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'  # Avoid OpenMP duplicate runtime warnings
 
 import torch
 import numpy as np
@@ -18,24 +18,24 @@ from utils.visualization import plot_order_parameter
 from utils.metrics import compute_order_parameter
 
 def load_trained_model(checkpoint_path, device='cpu'):
-    """加载训练好的模型"""
-    print(f"加载模型: {checkpoint_path}")
+    """Load a trained model"""
+    print(f"Load model: {checkpoint_path}")
     checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     
-    # 使用默认配置重建模型
-    N = 20  # 根据test配置
+    # Rebuild the model with default configuration
+    N = 20  # based on the test configuration
     T_context = 10
     
     spatial_network = generate_watts_strogatz(N, k_neighbors=4, rewiring_prob=0.1, seed=42)
     
-    # 判断任务类型
+    # Infer task type
     task = checkpoint.get('task', 'sync')
     if task == 'sync':
         attention_network = spatial_network.clone()
-        print("任务类型: 同步 (Sync)")
+        print("Task type: synchronization (Sync)")
     else:
         attention_network = torch.eye(N)
-        print("任务类型: 去同步 (Desync)")
+        print("Task type: desynchronization (Desync)")
     
     natural_frequencies = torch.randn(N) * 0.1
     
@@ -55,15 +55,15 @@ def load_trained_model(checkpoint_path, device='cpu'):
     model = model.to(device)
     model.eval()
     
-    # 显示学习到的参数
+    # Show learned parameters
     alpha_learned = torch.sigmoid(model.alpha).item()
-    print(f"学习到的 α: {alpha_learned:.4f}")
+    print(f"Learned α: {alpha_learned:.4f}")
     
     return model, task
 
 
 def generate_trajectory(model, initial_phases, n_steps, device='cpu'):
-    """生成轨迹"""
+    """Generate trajectory"""
     with torch.no_grad():
         model.reset_history()
         initial_phases = initial_phases.to(device)
@@ -78,58 +78,58 @@ def generate_trajectory(model, initial_phases, n_steps, device='cpu'):
 def main():
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     
-    # 模型路径
+    # Model path
     checkpoint_path = 'results/test_experiment/final_model.pt'
     
     if not os.path.exists(checkpoint_path):
-        print(f"错误: 找不到模型文件 {checkpoint_path}")
-        print("请先运行训练: python train.py --config test")
+        print(f"Error: model file not found {checkpoint_path}")
+        print("Please train first: python train.py --config test")
         return
     
-    # 加载模型
+    # Load model
     model, task = load_trained_model(checkpoint_path, device)
     
-    # 创建保存目录
+    # Create output directory
     save_dir = 'results/trained_trajectories'
     os.makedirs(save_dir, exist_ok=True)
     
-    # 生成多个测试案例
+    # Generate multiple test cases
     n_test_cases = 5
     n_steps = 100
     N = 20
     
-    print(f"\n生成 {n_test_cases} 个测试案例的轨迹...")
+    print(f"\nGenerating trajectories for {n_test_cases} test cases...")
     
     for i in range(n_test_cases):
-        # 随机初始条件
+        # Random initial condition
         initial_phases = torch.rand(N) * 2 * np.pi
         
-        # 生成轨迹
+        # Generate trajectory
         final_phases, order_params, trajectory = generate_trajectory(
             model, initial_phases, n_steps, device
         )
         
-        # 打印结果
+        # Print results
         initial_R = order_params[0].item()
         final_R = order_params[-1].item()
-        print(f"\n案例 {i+1}:")
-        print(f"  初始 R: {initial_R:.4f}")
-        print(f"  最终 R: {final_R:.4f}")
-        print(f"  变化: {final_R - initial_R:+.4f}")
+        print(f"\nCase {i+1}:")
+        print(f"  Initial R: {initial_R:.4f}")
+        print(f"  Final R: {final_R:.4f}")
+        print(f"  Change: {final_R - initial_R:+.4f}")
         
-        # 绘制并保存
+        # Plot and save
         save_path = os.path.join(save_dir, f'trajectory_case_{i+1}.png')
         plot_order_parameter(
             order_params.cpu().numpy(),
             save_path=save_path,
             title=f'Trained Model - Case {i+1}: R(0)={initial_R:.3f} → R(T)={final_R:.3f}'
         )
-        print(f"  图表已保存: {save_path}")
+        print(f"  Plot saved: {save_path}")
     
-    # 绘制平均轨迹
-    print("\n生成平均轨迹...")
+    # Plot the average trajectory
+    print("\nGenerate average trajectory...")
     all_order_params = []
-    for i in range(20):  # 更多样本计算平均
+    for i in range(20):  # more samples for averaging
         initial_phases = torch.rand(N) * 2 * np.pi
         _, order_params, _ = generate_trajectory(model, initial_phases, n_steps, device)
         all_order_params.append(order_params.cpu().numpy())
@@ -137,7 +137,7 @@ def main():
     mean_order_params = np.mean(all_order_params, axis=0)
     std_order_params = np.std(all_order_params, axis=0)
     
-    # 保存平均轨迹图
+    # Save average trajectory plot
     import matplotlib.pyplot as plt
     plt.figure(figsize=(10, 6))
     plt.plot(mean_order_params, linewidth=2, color='blue', label='Mean R')
@@ -159,9 +159,9 @@ def main():
     save_path = os.path.join(save_dir, 'average_trajectory.png')
     plt.savefig(save_path, dpi=150, bbox_inches='tight')
     plt.close()
-    print(f"平均轨迹图已保存: {save_path}")
+    print(f"Average trajectory plot saved: {save_path}")
     
-    print(f"\n所有结果保存在: {save_dir}/")
+    print(f"\nAll results saved in: {save_dir}/")
 
 
 if __name__ == '__main__':

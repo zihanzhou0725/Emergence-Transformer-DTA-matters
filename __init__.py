@@ -1,14 +1,14 @@
 """
 DTA Platform: Numerical Experiment Framework for Synchronization/Desynchronization Control
-基于机器学习的振子同步/去同步控制器数值实验框架
+machine-learning-based oscillatorsynchronization/Desynchronization controllernumerical experiment framework
 
-基于论文:
+Based on paper:
 - "Synchronization Transformer: Dynamical Temporal Attention Matters"
 
-主要组件:
-- models: Synchronization Transformer 模型
-- utils: 网络生成、可视化、评估指标
-- configs: 配置文件
+Main components:
+- models: Synchronization Transformer model
+- utils: network generation、Visualize、metrics
+- configs: configuration files
 """
 
 __version__ = "1.0.0"

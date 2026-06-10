@@ -1,5 +1,5 @@
 """
-训练器实现
+Trainer implementation
 """
 
 import torch
@@ -16,22 +16,22 @@ from utils.visualization import plot_training_curves, plot_order_parameter, plot
 
 class Trainer:
     """
-    控制器训练器
+    Controller trainer
     """
     
     def __init__(self, model, task='sync', lr=1e-3, device='cpu'):
         """
         Args:
-            model: SynchronizationTransformer 模型
-            task: 'sync' 或 'desync'
-            lr: 学习率
-            device: 计算设备
+            model: SynchronizationTransformer model
+            task: 'sync' or 'desync'
+            lr: learning rate
+            device: device
         """
         self.device = device
         self.model = model.to(device)
         self.task = task
         
-        # 创建控制器
+        # Create controller
         if task == 'sync':
             self.controller = SyncController(self.model)
         elif task == 'desync':
@@ -41,46 +41,46 @@ class Trainer:
         
         self.controller = self.controller.to(device)
         
-        # 优化器 - 只优化可学习参数
+        # Optimizer - only optimize learnable parameters
         self.optimizer = optim.Adam(self.model.parameters(), lr=lr)
         
-        # 训练历史
+        # Training history
         self.train_losses = []
         self.val_losses = []
         self.order_params_history = []
         
     def train_epoch(self, n_episodes, n_steps, n_oscillators, loss_mode='final'):
         """
-        训练一个epoch
+        Train one epoch
         
         Args:
-            n_episodes: 每个epoch的episode数
-            n_steps: 每个episode的步数
-            n_oscillators: 振子数量
-            loss_mode: 损失模式 ('final', 'mean', 'traj', 'convergence')
+            n_episodes: episodes per epoch
+            n_steps: steps per episode
+            n_oscillators: Number of oscillators
+            loss_mode: loss mode ('final', 'mean', 'traj', 'convergence')
         
         Returns:
-            avg_loss: 平均损失
+            avg_loss: average loss
         """
         epoch_losses = []
         
         for episode in range(n_episodes):
-            # 随机采样初始条件
+            # Sample a random initial condition
             initial_phases = torch.rand(n_oscillators, device=self.device) * 2 * np.pi
             
-            # 重置模型历史
+            # Reset model history
             self.model.reset_history()
             
-            # 前向传播
+            # Forward pass
             loss, order_params, final_phases = self.controller(
                 initial_phases, n_steps, mode=loss_mode
             )
             
-            # 反向传播
+            # Backpropagation
             self.optimizer.zero_grad()
             loss.backward()
             
-            # 梯度裁剪，防止梯度爆炸
+            # Gradient clipping，avoid gradient explosion
             torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=1.0)
             
             self.optimizer.step()
@@ -94,16 +94,16 @@ class Trainer:
     
     def validate(self, n_val_episodes, n_steps, n_oscillators):
         """
-        验证
+        Validate
         
         Args:
-            n_val_episodes: 验证episode数
-            n_steps: 步数
-            n_oscillators: 振子数量
+            n_val_episodes: validation episodes
+            n_steps: number of steps
+            n_oscillators: Number of oscillators
         
         Returns:
-            avg_loss: 平均损失
-            avg_order_param: 平均序参量
+            avg_loss: average loss
+            avg_order_param: mean order parameter
         """
         val_losses = []
         order_params_list = []
@@ -134,17 +134,17 @@ class Trainer:
               attention_type='neighbor', network_type='ws', natural_freq_std=0.1,
               loss_mode='final'):
         """
-        完整训练流程
+        Full training workflow
         
         Args:
-            n_epochs: 训练epoch数
-            n_episodes_per_epoch: 每个epoch的episode数
-            n_val_episodes: 验证episode数
-            n_steps: 每个episode的模拟步数
-            n_oscillators: 振子数量
-            save_dir: 保存目录
-            verbose: 是否打印进度
-            loss_mode: 损失模式 ('final', 'mean', 'traj', 'convergence')
+            n_epochs: number of training epochs
+            n_episodes_per_epoch: episodes per epoch
+            n_val_episodes: validation episodes
+            n_steps: simulation steps per episode
+            n_oscillators: Number of oscillators
+            save_dir: output directory
+            verbose: whether to print progress
+            loss_mode: loss mode ('final', 'mean', 'traj', 'convergence')
         """
         if save_dir:
             os.makedirs(save_dir, exist_ok=True)
@@ -152,15 +152,15 @@ class Trainer:
         iterator = tqdm(range(n_epochs)) if verbose else range(n_epochs)
         
         for epoch in iterator:
-            # 训练
+            # Training
             train_loss = self.train_epoch(n_episodes_per_epoch, n_steps, n_oscillators, loss_mode)
             
-            # 验证
+            # Validate
             val_loss, avg_order_param = self.validate(
                 n_val_episodes, n_steps, n_oscillators
             )
             
-            # 获取当前alpha值
+            # Get current alpha value
             alpha = torch.sigmoid(self.model.alpha).item()
             
             if verbose:
@@ -172,17 +172,17 @@ class Trainer:
                     f"α: {alpha:.4f}"
                 )
             
-            # 保存检查点
+            # Save checkpoint
             if save_dir and (epoch + 1) % 10 == 0:
                 self.save_checkpoint(os.path.join(save_dir, f'checkpoint_epoch_{epoch+1}.pt'),
                                    spatial_network, attention_network, natural_frequencies, attention_type, network_type, natural_freq_std)
         
-        # 保存最终模型
+        # Save final model
         if save_dir:
             self.save_checkpoint(os.path.join(save_dir, 'final_model.pt'),
                                spatial_network, attention_network, natural_frequencies, attention_type, network_type, natural_freq_std)
             
-            # 绘制训练曲线
+            # Plot training curves
             plot_training_curves(
                 self.train_losses, 
                 self.val_losses, 
@@ -190,7 +190,7 @@ class Trainer:
                 save_path=os.path.join(save_dir, 'training_curves.png')
             )
             
-            # 保存训练历史
+            # Save training history
             history = {
                 'train_losses': self.train_losses,
                 'val_losses': self.val_losses,
@@ -200,7 +200,7 @@ class Trainer:
                 json.dump(history, f)
     
     def save_checkpoint(self, path, spatial_network=None, attention_network=None, natural_frequencies=None, attention_type='neighbor', network_type='ws', natural_freq_std=0.1):
-        """保存检查点"""
+        """Save checkpoint"""
         checkpoint = {
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),
@@ -220,7 +220,7 @@ class Trainer:
         torch.save(checkpoint, path)
     
     def load_checkpoint(self, path):
-        """加载检查点"""
+        """Load checkpoint"""
         checkpoint = torch.load(path, map_location=self.device)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -231,7 +231,7 @@ class Trainer:
 
 class BatchTrainer:
     """
-    批量训练器 - 支持同时训练多个初始条件
+    Batch trainer - supports multiple initial conditions
     """
     
     def __init__(self, model, task='sync', lr=1e-3, device='cpu'):
@@ -251,14 +251,14 @@ class BatchTrainer:
         
     def train_epoch_batched(self, batch_size, n_steps, n_oscillators):
         """
-        批量训练一个epoch
+        Train one batched epoch
         
         Args:
-            batch_size: 批量大小
-            n_steps: 模拟步数
-            n_oscillators: 振子数量
+            batch_size: batch size
+            n_steps: Simulation steps
+            n_oscillators: Number of oscillators
         """
-        # 生成批量初始条件
+        # Generate batched initial conditions
         initial_phases_batch = torch.rand(batch_size, n_oscillators, device=self.device) * 2 * np.pi
         
         total_loss = 0.0
@@ -270,10 +270,10 @@ class BatchTrainer:
             )
             total_loss += loss
         
-        # 平均损失
+        # average loss
         avg_loss = total_loss / batch_size
         
-        # 反向传播
+        # Backpropagation
         self.optimizer.zero_grad()
         avg_loss.backward()
         self.optimizer.step()
@@ -283,7 +283,7 @@ class BatchTrainer:
         return avg_loss.item()
     
     def train(self, n_epochs, batch_size, n_steps, n_oscillators, save_dir=None):
-        """批量训练"""
+        """Batch training"""
         if save_dir:
             os.makedirs(save_dir, exist_ok=True)
         
@@ -298,7 +298,7 @@ class BatchTrainer:
             self.save_checkpoint(os.path.join(save_dir, 'final_model.pt'))
     
     def save_checkpoint(self, path):
-        """保存检查点"""
+        """Save checkpoint"""
         torch.save({
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict(),

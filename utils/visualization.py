@@ -1,21 +1,21 @@
 """
-可视化工具
+Visualization utilities
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')  # 非交互式后端
+matplotlib.use('Agg')  # non-interactive backend
 
 
 def plot_phase_evolution(phases_trajectory, save_path=None, title="Phase Evolution"):
     """
-    绘制相位演化图
+    Plot phase evolution
     
     Args:
-        phases_trajectory: (T, N) 相位轨迹
-        save_path: 保存路径
-        title: 图表标题
+        phases_trajectory: (T, N) phase trajectory
+        save_path: save path
+        title: plot title
     """
     if isinstance(phases_trajectory, np.ndarray):
         phases = phases_trajectory
@@ -26,7 +26,7 @@ def plot_phase_evolution(phases_trajectory, save_path=None, title="Phase Evoluti
     
     fig, ax = plt.subplots(figsize=(12, 6))
     
-    # 绘制每个振子的相位
+    # Plot each oscillator phase
     for i in range(N):
         ax.plot(range(T), phases[:, i], alpha=0.6, linewidth=0.5)
     
@@ -44,12 +44,12 @@ def plot_phase_evolution(phases_trajectory, save_path=None, title="Phase Evoluti
 
 def plot_order_parameter(order_params, save_path=None, title="Order Parameter Evolution"):
     """
-    绘制序参量演化图
+    Plot order-parameter evolution
     
     Args:
-        order_params: (T,) 序参量序列
-        save_path: 保存路径
-        title: 图表标题
+        order_params: (T,) order-parameter sequence
+        save_path: save path
+        title: plot title
     """
     if isinstance(order_params, np.ndarray):
         R_values = order_params
@@ -79,12 +79,12 @@ def plot_order_parameter(order_params, save_path=None, title="Order Parameter Ev
 
 def plot_phase_distribution(phases, save_path=None, title="Phase Distribution"):
     """
-    绘制相位分布直方图
+    Plot phase-distribution histogram
     
     Args:
-        phases: (N,) 相位
-        save_path: 保存路径
-        title: 图表标题
+        phases: (N,) phases
+        save_path: save path
+        title: plot title
     """
     if isinstance(phases, np.ndarray):
         phase_values = phases
@@ -93,10 +93,10 @@ def plot_phase_distribution(phases, save_path=None, title="Phase Distribution"):
     
     fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(projection='polar'))
     
-    # 直方图
+    # Histogram
     ax.hist(phase_values, bins=30, alpha=0.7, color='blue', edgecolor='black')
     
-    # 计算并绘制平均相位
+    # Compute and plot mean phase
     mean_phase = np.arctan2(np.sin(phase_values).mean(), np.cos(phase_values).mean())
     R = np.sqrt(np.cos(phase_values).mean()**2 + np.sin(phase_values).mean()**2)
     ax.arrow(mean_phase, 0, 0, R, alpha=0.9, width=0.1, 
@@ -116,14 +116,14 @@ def plot_phase_distribution(phases, save_path=None, title="Phase Distribution"):
 def plot_training_curves(train_losses, val_losses=None, order_params_history=None, 
                         save_path=None, title="Training Curves"):
     """
-    绘制训练曲线
+    Plot training curves
     
     Args:
-        train_losses: 训练损失列表
-        val_losses: 验证损失列表
-        order_params_history: 序参量历史
-        save_path: 保存路径
-        title: 图表标题
+        train_losses: training loss list
+        val_losses: validation loss list
+        order_params_history: order-parameter history
+        save_path: save path
+        title: plot title
     """
     n_plots = 1 + (val_losses is not None) + (order_params_history is not None)
     
@@ -133,7 +133,7 @@ def plot_training_curves(train_losses, val_losses=None, order_params_history=Non
     
     idx = 0
     
-    # 损失曲线
+    # Loss curves
     ax = axes[idx]
     ax.plot(train_losses, label='Train Loss', linewidth=2)
     if val_losses is not None:
@@ -145,7 +145,7 @@ def plot_training_curves(train_losses, val_losses=None, order_params_history=Non
     ax.grid(True, alpha=0.3)
     idx += 1
     
-    # 序参量曲线
+    # Order-parameter curve
     if order_params_history is not None:
         ax = axes[idx]
         if isinstance(order_params_history, np.ndarray):
@@ -174,13 +174,13 @@ def plot_training_curves(train_losses, val_losses=None, order_params_history=Non
 
 def plot_network_topology(adjacency, phases=None, save_path=None, title="Network Topology"):
     """
-    绘制网络拓扑图
+    Plot network topology
     
     Args:
-        adjacency: (N, N) 邻接矩阵
-        phases: (N,) 相位 (用于着色)
-        save_path: 保存路径
-        title: 图表标题
+        adjacency: (N, N) adjacency matrix
+        phases: (N,) phases (used for coloring)
+        save_path: save path
+        title: plot title
     """
     try:
         import networkx as nx
@@ -197,23 +197,23 @@ def plot_network_topology(adjacency, phases=None, save_path=None, title="Network
     
     fig, ax = plt.subplots(figsize=(10, 10))
     
-    # 布局
+    # Layout
     pos = nx.spring_layout(G, seed=42)
     
-    # 绘制节点
+    # Draw nodes
     if phases is not None:
         if isinstance(phases, np.ndarray):
             phase_values = phases
         else:
             phase_values = phases.detach().cpu().numpy()
         
-        # 将相位映射到颜色
+        # Map phase to color
         colors = plt.cm.hsv((phase_values % (2*np.pi)) / (2*np.pi))
         nx.draw_networkx_nodes(G, pos, node_color=colors, node_size=300, ax=ax)
     else:
         nx.draw_networkx_nodes(G, pos, node_color='lightblue', node_size=300, ax=ax)
     
-    # 绘制边
+    # Draw edges
     nx.draw_networkx_edges(G, pos, alpha=0.5, ax=ax)
     
     ax.set_title(title)
@@ -228,12 +228,12 @@ def plot_network_topology(adjacency, phases=None, save_path=None, title="Network
 
 def plot_attention_weights(attention_matrix, save_path=None, title="Attention Weights"):
     """
-    绘制注意力权重热力图
+    Plot attention-weight heatmap
     
     Args:
-        attention_matrix: (T, T) 或 (N, N) 注意力权重矩阵
-        save_path: 保存路径
-        title: 图表标题
+        attention_matrix: (T, T) or (N, N) attention weight matrices
+        save_path: save path
+        title: plot title
     """
     if isinstance(attention_matrix, np.ndarray):
         C = attention_matrix
