@@ -1,12 +1,12 @@
 # DTA Platform
 
-A PyTorch implementation of the **Synchronization Transformer** for numerical experiments on coupled oscillator synchronization and desynchronization.
+A PyTorch implementation of the **Emergence Transformer** for numerical experiments on coupled oscillator synchronization and desynchronization.
 
 This repository focuses on the model only: a single-layer Dynamical Temporal Attention (DTA) mechanism that augments traditional network coupling with an attention-based temporal memory term.
 
 ## Features
 
-- Single-layer Synchronization Transformer for networked phase oscillators.
+- Single-layer Emergence Transformer for networked phase oscillators.
 - Synchronization and desynchronization control objectives.
 - Neighbor-DTA and Self-DTA attention network modes.
 - Watts-Strogatz small-world and fully connected network support.
@@ -107,7 +107,7 @@ dta_platform/
 ├── configs/
 │   └── default_config.py          # experiment configurations
 ├── models/
-│   ├── sync_transformer.py        # Synchronization Transformer
+│   ├── sync_transformer.py        # Emergence Transformer
 │   └── controller.py              # sync/desync loss wrappers
 ├── utils/
 │   ├── networks.py                # graph generation utilities
@@ -322,7 +322,7 @@ If a checkpoint path does not exist, train the corresponding model first or pass
 
 ## Citation
 
-This code is inspired by the Synchronization Transformer / Dynamical Temporal Attention formulation for coupled oscillator dynamics.
+This code is inspired by the Emergence Transformer / Dynamical Temporal Attention formulation for coupled oscillator dynamics.
 
 If you use this repository in academic work, please cite the original paper “Emergence Transformer: Dynamical Temporal Attention Matters”.
 
